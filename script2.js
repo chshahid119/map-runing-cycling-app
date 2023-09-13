@@ -1,20 +1,5 @@
 'use strict';
 
-const months = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
@@ -30,6 +15,15 @@ class Workout {
     this.coords = coords;
     this.distance = distance;
     this.duration = duration;
+    this._setDescription();
+  }
+  _setDescription() {
+    //prettier-ignore
+    const months = ['January','February','March','April','May', 'June','July', 'August','September',
+    'October','November','December'];
+    this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
+      months[this.date.getMonth()]
+    } ${this.date.getDate()}`;
   }
 }
 
@@ -39,6 +33,7 @@ class Running extends Workout {
     super(coords, distance, duration);
     this.cadence = cadence;
     this.calcPace();
+    this._setDescription();
   }
 
   calcPace() {
@@ -53,6 +48,7 @@ class Cycling extends Workout {
     super(coords, distance, duration);
     this.elevationGain = elevationGain;
     this.calcSpeed();
+    this._setDescription();
   }
   calcSpeed() {
     //min/km
@@ -110,9 +106,10 @@ class App {
   }
   _newWorkout(e) {
     // Helper function to check the inputs is valid or not?
+    // Variodic function
     const validInputs = (...inputs) =>
       inputs.every(inp => Number.isFinite(inp));
-
+    // Variodic function
     const allPositive = (...inputs) => inputs.every(inp => inp > 0);
     e.preventDefault();
 
@@ -152,6 +149,7 @@ class App {
       workout = new Cycling([lat, lng], distance, duration, elevation);
     }
     this.renderWorkoutMarker(workout);
+    this._renderWorkout(workout);
     inputDistance.value =
       inputDuration.value =
       inputCadence.value =
@@ -174,6 +172,71 @@ class App {
       .setPopupContent('Workout')
       .openPopup();
   }
+  _renderWorkout(workout) {
+    let html = ` <li class="workout workout--${workout.name}" data-id="${
+      workout.id
+    }">
+    <h2 class="workout__title">${workout.description}</h2>
+    <div class="workout__details">
+      <span class="workout__icon">${
+        workout.name === 'running' ? '🏃‍♂️' : '🚴‍♀️'
+      }</span>
+      <span class="workout__value">${workout.distance}</span>
+      <span class="workout__unit">km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⏱</span>
+      <span class="workout__value">${workout.duration}</span>
+      <span class="workout__unit">min</span>
+    </div>`;
+
+    if (workout.type === 'running') {
+      html += `<div class="workout__details">
+      <span class="workout__icon">⚡️</span>
+      <span class="workout__value">${workout.pace.toFixed(1)}</span>
+      <span class="workout__unit">min/km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">🦶🏼</span>
+      <span class="workout__value">${workout.cadence}</span>
+      <span class="workout__unit">spm</span>
+    </div>
+  </li>`;
+    }
+
+    if (workout.type === 'cycling') {
+      html += `<div class="workout__details">
+      <span class="workout__icon">⚡️</span>
+      <span class="workout__value">${workout.speed.toFixed(1)}</span>
+      <span class="workout__unit">km/h</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⛰</span>
+      <span class="workout__value">${workout.elevationGain}</span>
+      <span class="workout__unit">m</span>
+    </div>
+  </li>`;
+
+      form.insertAdjacentHTML('afterend', html);
+    }
+  }
 }
 
 const app = new App();
+
+//Variadic functions in Js
+// Two ways to make variodic functions
+
+// 1) using """"arguments"""" keyword -->used before ES6 when spread and rest operator does not come
+// function sum() {
+//   console.log(numbers);
+// }
+
+// sum(1, 2, 3, 4);//output-->1,2,3,4
+
+// 2) using """""Rest Operator""""" keyword -->used from Es6
+// function sum(...numbers) {
+//   console.log(numbers);
+// }
+
+// sum(1, 2, 3, 4);//output-->1,2,3,4
